@@ -27,4 +27,4 @@ ax2.set_ylabel('Frequency Domain (Spectrum) Magnitude')
 ax2.set_xlim(-f_s / 2, f_s / 2)
 ax2.set_ylim(-5, 110)
 
-# plt.show()
+plt.show()
