@@ -1,4 +1,6 @@
 pyserial
 crcmod
-opencv-contrib-python
 scipy
+
+matplotlib
+numpy
