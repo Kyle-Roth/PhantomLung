@@ -12,6 +12,7 @@ import crcmod.predefined  # To install: pip install crcmod
 from scipy.fftpack import fft, fftfreq
 import matplotlib.pyplot as plt
 import threading
+from time import sleep
 
 class TeraRanger(threading.Thread):
 
@@ -117,31 +118,46 @@ if __name__ == "__main__":
     Evo60 = TeraRanger()
     data = freqs = X = []
 
+    fig, ax = plt.subplots()
+    fig2,ax2 = plt.subplots()
+    fig3,ax3 = plt.subplots()
+    plt.ion()
+    plt.show()
+
     while True:
         temp = Evo60.get_evo_range()
         if temp != 'Waiting for frame header':
-            data.append(50*temp)
+            data.append(temp)
             # print(temp)
-
-        if len(data) == 1500:
+            
+        if len(data)>0 and len(data)%1000 == 0:
             # Calculate Forier Transform
-            print(data)
+            # print(data)
             X = fft(data)
             freqs = fftfreq(len(data), d = 1/115200) # d = 1/baudrate = sample rate
 
 
 
              # print the positive frequency that has the most correlation
-            bpm = 120*freqs[np.argmax(np.abs(X[1:int(len(X)/2)]))]
+            bpm = 120*freqs[np.argmax(np.abs(X[1:int(len(X)/2)]))+1]
 
-            print(freqs)
-            print(f"{bpm} bpm");
-            break
+            # print(freqs)
+            print(f"{bpm:.2f} bpm @ {len(data)} points")
+        
+        if len(data)>0 and len(data)%10000 == 0:
+            ax.clear()
+            ax2.clear()
+            ax3.clear()
+            
+            ax.plot(data)
 
-
-    fig, ax = plt.subplots()
-    ax.plot(data)
-
-    fig2,ax2 = plt.subplots()
-    ax2.plot(freqs[1:],np.abs(X[1:]))
-    plt.show()
+            ax2.plot(freqs[1:],np.abs(X[1:]))
+            ax2.set_xlim([-500, 500])
+            
+            ax3.plot(freqs[1:],np.abs(X[1:]))
+            
+            plt.draw()
+            sleep(0.1)
+            plt.pause(0.0001)
+            
+            
