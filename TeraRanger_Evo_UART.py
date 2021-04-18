@@ -10,8 +10,10 @@ import numpy as np
 import serial.tools.list_ports
 import crcmod.predefined  # To install: pip install crcmod
 from scipy.fftpack import fft, fftfreq
+import matplotlib.pyplot as plt
+import threading
 
-class TeraRanger:
+class TeraRanger(threading.Thread):
 
     port = None
     evo = None
@@ -25,16 +27,13 @@ class TeraRanger:
 
         self.port = self.findEvo()
 
-        if port == 'NULL':
-            print("Could not find Evo. Exiting")
-            return -1
-
+        if self.port == 'NULL':
+            print("Could not find Evo")
         else:
-            self.evo = self.openEvo(port)
+            print("Found Evo")
+            self.evo = self.openEvo()
 
-        return 1
-
-    def findEvo():
+    def findEvo(self):
         # Find Live Ports, return port name if found, NULL if not
         print('Scanning all live ports on this PC')
         ports = list(serial.tools.list_ports.comports())
@@ -45,7 +44,8 @@ class TeraRanger:
                 return p[0]
         return 'NULL'
 
-    def openEvo(self,portname):
+    def openEvo(self):
+        portname = self.port
         print('Attempting to open port...')
         # Open the Evo and catch any exceptions thrown by the OS
         print(portname)
@@ -61,7 +61,8 @@ class TeraRanger:
         print('Serial port opened')
         return self.evo
 
-    def get_evo_range(self,evo_serial):
+    def get_evo_range(self):
+        evo_serial = self.evo
         crc8_fn = crcmod.predefined.mkPredefinedCrcFun('crc-8')
         # Read one byte
         data = evo_serial.read(1)
@@ -76,7 +77,7 @@ class TeraRanger:
                 return "CRC mismatch. Check connection or make sure only one progam access the sensor port."
         # Check special cases (limit values)
         else:
-            return "Wating for frame header"
+            return "Waiting for frame header"
 
         # Checking error codes
         if rng == 65535: # Sensor measuring above its maximum limit
@@ -90,7 +91,7 @@ class TeraRanger:
             dec_out = rng / 1000.0
         return dec_out
 
-    def streamData():
+    def streamData(self):
         print('Starting Evo Data Stream')
 
         while True:
@@ -103,10 +104,44 @@ class TeraRanger:
                 self.freqs = fftfreq(len(self.data), d = 1/115200) # d = 1/baudrate = sample rate
 
                  # print the positive frequency that has the most correlation
-                self.bpm = self.freqs[np.argmax(np.abs(X[0:int(len(X)/2)]))]
+                self.bpm = 120*self.freqs[np.argmax(np.abs(X[0:int(len(X)/2)]))]
             except serial.serialutil.SerialException:
                 print("Device disconnected (or multiple access on port). Exiting...")
                 break
 
-    def close():
+    def _close(self):
         self.evo.close()
+
+if __name__ == "__main__":
+
+    Evo60 = TeraRanger()
+    data = freqs = X = []
+
+    while True:
+        temp = Evo60.get_evo_range()
+        if temp != 'Waiting for frame header':
+            data.append(50*temp)
+            # print(temp)
+
+        if len(data) == 1500:
+            # Calculate Forier Transform
+            print(data)
+            X = fft(data)
+            freqs = fftfreq(len(data), d = 1/115200) # d = 1/baudrate = sample rate
+
+
+
+             # print the positive frequency that has the most correlation
+            bpm = 120*freqs[np.argmax(np.abs(X[1:int(len(X)/2)]))]
+
+            print(freqs)
+            print(f"{bpm} bpm");
+            break
+
+
+    fig, ax = plt.subplots()
+    ax.plot(data)
+
+    fig2,ax2 = plt.subplots()
+    ax2.plot(freqs[1:],np.abs(X[1:]))
+    plt.show()
