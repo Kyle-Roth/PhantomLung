@@ -1,18 +1,20 @@
 import tkinter as tk
 import math
 import RPi.GPIO as GPIO
-from time import sleep
+from time import sleep,time
 import numpy as np
 import matplotlib.pyplot as p
 
 
+start = 0.0
 freq = 0
 i = 0
 m = 1
-A = 77
+A = 0
 M = 21
 t = 21
-#range 21 to 98 (roughly 28.5mm)
+p = 1
+#range 21 to 98 (roughly 30.0mm)
 power = 0
 powerfunc = 1
 pin = 33
@@ -30,10 +32,11 @@ def exit():
 root.protocol("WM_DELETE_WINDOW",exit)
 
 def reset():
+	global start
 	global M
 	global t
-	global i
-	i = 0
+	#global i
+	#i = 0
 	if (t > M):	
 		while (t > M):
 			t -= 1
@@ -44,33 +47,38 @@ def reset():
 			t += 1
 			pin_pwm.ChangeDutyCycle(t)
 			sleep(0.01)
+	start = time()
 
 def handle_button(event):
 	global freq
 	freq = s.get()
+	global A
+	A = (sa.get())*0.77
+	global M
+	M = (sm.get())*0.77 + 21
 	reset()
 
 button = tk.Button(root,text="Update BPM",width=15,height=5,bg="blue",fg="white")
 button.bind("<Button-1>",handle_button)
 button.grid(column=0,row=1)
 
-def handle_buttona(event):
-	global A
-	A = (sa.get())*0.77
-	reset()
+#def handle_buttona(event):
+#	global A
+#	A = (sa.get())*0.77
+#	reset()
 
-buttona = tk.Button(root,text="Update Amplitude",width=15,height=5,bg="blue",fg="white")
-buttona.bind("<Button-1>",handle_buttona)
-buttona.grid(column=1,row=1)
+#buttona = tk.Button(root,text="Update Amplitude",width=15,height=5,bg="blue",fg="white")
+#buttona.bind("<Button-1>",handle_buttona)
+#buttona.grid(column=1,row=1)
 
-def handle_buttonm(event):
-	global M
-	M = (sm.get())*0.77 + 21
-	reset()
+#def handle_buttonm(event):
+#	global M
+#	M = (sm.get())*0.77 + 21
+#	reset()
 
-buttonm = tk.Button(root,text="Update Minimum",width=15,height=5,bg="blue",fg="white")
-buttonm.bind("<Button-1>",handle_buttonm)
-buttonm.grid(column=2,row=1)
+#buttonm = tk.Button(root,text="Update Minimum",width=15,height=5,bg="blue",fg="white")
+#buttonm.bind("<Button-1>",handle_buttonm)
+#buttonm.grid(column=2,row=1)
 
 def change_mode(event):
 	global m
@@ -84,7 +92,21 @@ mode_button = tk.Button(root,text="Mode = Custom",width=15,height=5,bg="blue",fg
 mode_button.bind("<Button-1>",change_mode)
 mode_button.grid(column=3,row=1)
 
+def pause(event):
+	global p
+	reset()
+	if (p==1):
+		p = 0
+		pause_button.config(text="Resume")
+	else:
+		p = 1
+		pause_button.config(text="Pause")
+pause_button = tk.Button(root,text="Pause",width=15,height=5,bg="blue",fg="white")
+pause_button.bind("<Button-1>",pause)
+pause_button.grid(column=1,row=1)
+
 def squared(event):
+	global start
 	global power
 	power = 2
 	global i
@@ -97,22 +119,25 @@ def squared(event):
 	powerfunc = 1
 	reset()
 	while(1):
-		if (m == 0):
-			i += 1
-			t = 77*math.pow(math.sin(0.125*(i*2.0*math.pi/1000.0)),2)+21
-			pin_pwm.ChangeDutyCycle(t)
-			sleep(0.001)	
-			if (i%10 == 0):
-				#print(freq)
-				root.update()
-		if (m == 1):
-			i += 1
-			t = A*math.pow(math.sin((freq/120.0)*(i*2.0*math.pi/1000.0)),2)+M
-			pin_pwm.ChangeDutyCycle(t)
-			sleep(0.001)
-			if (i%10 == 0):
+		if (p==1):
+			if (m == 0):
+				i += 1
+				t = 77*math.pow(math.sin(0.125*((time()-start)*2.0*math.pi/1000.0)),2)+21
+				pin_pwm.ChangeDutyCycle(t)
+				#sleep(0.001)	
+				if (i%10 == 0):
+					print(freq)
+					root.update()
+			if (m == 1):
+				#i += 1
+				t = A*math.pow(math.sin((freq/120.0)*((time()-start)*2.0*math.pi)),2)+M
+				pin_pwm.ChangeDutyCycle(t)
+				#sleep(0.001)
+				#(time()-start)%0.01 == 0):
 				#print(t)
-				root.update()
+			root.update()
+		else:
+			root.update()
 sqbutton = tk.Button(root,text="Run Squared",width=10,height=5,bg="blue",fg="white")
 sqbutton.bind("<Button-1>",squared)
 sqbutton.grid(column=0,row=0)
@@ -130,22 +155,25 @@ def fourth(event):
 	powerfunc = 1
 	reset()
 	while(1):
-		if (m == 0):
-			i += 1
-			t = 77*math.pow(math.sin(0.125*(i*2.0*math.pi/1000.0)),4)+21
-			pin_pwm.ChangeDutyCycle(t)
-			sleep(0.001)	
-			if (i%10 == 0):
-				#print(freq)
-				root.update()
-		if (m == 1):
-			i += 1
-			t = A*math.pow(math.sin((freq/120.0)*(i*2.0*math.pi/1000.0)),4)+M
-			pin_pwm.ChangeDutyCycle(t)
-			sleep(0.001)
-			if (i%10 == 0):
-				#print(t)
-				root.update()
+		if (p==1):
+			if (m == 0):
+				i += 1
+				t = 77*math.pow(math.sin(0.125*(i*2.0*math.pi/1000.0)),4)+21
+				pin_pwm.ChangeDutyCycle(t)
+				sleep(0.001)	
+				if (i%10 == 0):
+					#print(freq)
+					root.update()
+			if (m == 1):
+				i += 1
+				t = A*math.pow(math.sin((freq/120.0)*(i*2.0*math.pi/1000.0)),4)+M
+				pin_pwm.ChangeDutyCycle(t)
+				sleep(0.001)
+				if (i%10 == 0):
+					#print(t)
+					root.update()
+		else:
+			root.update()
 fobutton = tk.Button(root,text="Run Fourth",width=10,height=5,bg="blue",fg="white")
 fobutton.bind("<Button-1>",fourth)
 fobutton.grid(column=1,row=0)
@@ -163,22 +191,25 @@ def sixth(event):
 	powerfunc = 1
 	reset()
 	while(1):
-		if (m == 0):
-			i += 1
-			t = 77*math.pow(math.sin(0.125*(i*2.0*math.pi/1000.0)),6)+21
-			pin_pwm.ChangeDutyCycle(t)
-			sleep(0.001)	
-			if (i%10 == 0):
-				#print(freq)
-				root.update()
-		if (m == 1):
-			i += 1
-			t = A*math.pow(math.sin((freq/120.0)*(i*2.0*math.pi/1000.0)),6)+M
-			pin_pwm.ChangeDutyCycle(t)
-			sleep(0.001)
-			if (i%10 == 0):
-				#print(t)
-				root.update()
+		if (p==1):
+			if (m == 0):
+				i += 1
+				t = 77*math.pow(math.sin(0.125*(i*2.0*math.pi/1000.0)),6)+21
+				pin_pwm.ChangeDutyCycle(t)
+				sleep(0.001)	
+				if (i%10 == 0):
+					#print(freq)
+					root.update()
+			if (m == 1):
+				i += 1
+				t = A*math.pow(math.sin((freq/120.0)*(i*2.0*math.pi/1000.0)),6)+M
+				pin_pwm.ChangeDutyCycle(t)
+				sleep(0.001)
+				if (i%10 == 0):
+					#print(t)
+					root.update()
+		else:
+			root.update()
 sibutton = tk.Button(root,text="Run Sixth",width=10,height=5,bg="blue",fg="white")
 sibutton.bind("<Button-1>",sixth)
 sibutton.grid(column=2,row=0)
@@ -194,22 +225,25 @@ def absolute(event):
 	powerfunc = 0
 	reset()
 	while(1):
-		if (m == 0):
-			i += 1
-			t = 77*abs(math.sin(0.125*(i*2.0*math.pi/1000.0)))+21
-			pin_pwm.ChangeDutyCycle(t)
-			sleep(0.001)	
-			if (i%10 == 0):
-				#print(freq)
-				root.update()
-		if (m == 1):
-			i += 1
-			t = A*abs(math.sin((freq/120.0)*(i*2.0*math.pi/1000.0)))+M
-			pin_pwm.ChangeDutyCycle(t)
-			sleep(0.001)
-			if (i%10 == 0):
-				#print(t)
-				root.update()
+		if (p==1):
+			if (m == 0):
+				i += 1
+				t = 77*abs(math.sin(0.125*(i*2.0*math.pi/1000.0)))+21
+				pin_pwm.ChangeDutyCycle(t)
+				sleep(0.001)	
+				if (i%10 == 0):
+					#print(freq)
+					root.update()
+			if (m == 1):
+				i += 1
+				t = A*abs(math.sin((freq/120.0)*(i*2.0*math.pi/1000.0)))+M
+				pin_pwm.ChangeDutyCycle(t)
+				sleep(0.001)
+				if (i%10 == 0):
+					#print(t)
+					root.update()
+		else:
+			root.update()
 abbutton = tk.Button(root,text="Run Absolute",width=10,height=5,bg="blue",fg="white")
 abbutton.bind("<Button-1>",absolute)
 abbutton.grid(column=3,row=0)

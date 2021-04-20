@@ -111,7 +111,7 @@ def updatePlots(window,evo):
 
     # set animation, save backgorund
     window.line.set_animated(True)
-    window.canvas.draw()
+    window.canvas.draw()`
     window.background=window.canvas.copy_from_bbox(window.ax.bbox)
 
     # now redraw and blit
