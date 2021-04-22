@@ -54,7 +54,7 @@ class MainWindow:
 
         ax.grid(which='both',linestyle='--')
         ax.set_xlabel("Time (s)")
-        
+
         settings=self.settings= Frame(root)
         settings.pack(expand='yes')
 
@@ -78,7 +78,7 @@ class MainWindow:
         mode.grid(column=3,row=0)
         start.grid(column=4,row=0)
         update.grid(column=5,row=0)
-        
+
     def callback(self,modeselect):
         self.FUNCinternal = modeselect
         print(modeselect)
@@ -88,22 +88,22 @@ class MainWindow:
         self.BPM = self.bpm.get()
         self.FUNC = self.FUNCinternal
         self.UpdateCheck = 1
-    
+
     def updatePlot(self,sTime,sData,eTime,eData):
         t = self.t
         f = self.f
         ax = self.ax
         canvas = self.canvas
-        
+
         if self.line == None:
             self.sline, = ax.plot(sTime,sData,'b')
             self.eline, = ax.plot(eTime,eData,'r')
-            
+
             ax.text(0.83, 1.02,'25 bpm',
                     color = 'b', fontsize = 20,
                     # bbox={'facecolor': 'blue', 'alpha': 1, 'pad': 3},
                     transform = ax.transAxes)
-            
+
             #ax.relim()
             #ax.autoscale_view()
 
@@ -112,8 +112,8 @@ class MainWindow:
             #canvas.flush_events()
             ax.set_ylim([0, 100])
             ax.set_xlim([min(sTime[0],eTime[0]), max(sTime[len(sTime)-1],eTime[len(eTime)-1])])
-            
-            
+
+
             # set animation, save backgorund
             ax.get_xaxis().set_animated(True)
             self.sline.set_animated(True)
@@ -126,16 +126,16 @@ class MainWindow:
             ax.draw_artist(self.sline)
             ax.draw_artist(self.eline)
             canvas.blit(ax.clipbox)
-            
+
         else:
             self.sline.set_xdata(sTime)
             self.sline.set_ydata(sData)
             self.eline.set_xdata(eTime)
             self.eline.set_ydata(eData)
-            
+
             ax.set_xlim([min(sTime[0],eTime[0]), max(sTime[len(sTime)-1],eTime[len(eTime)-1])])
-            
-                        
+
+
             # restore the background, draw animation,blit
             canvas.restore_region(self.background)
             ax.draw_artist(ax.get_xaxis())
@@ -143,7 +143,7 @@ class MainWindow:
             ax.draw_artist(self.eline)
             canvas.blit(ax.clipbox)
             canvas.flush_events()
-            
+
     def start(self):
         if self.running:
             self.running = 0
@@ -154,7 +154,7 @@ class MainWindow:
             self.start.configure(text='Stop')
             print("Starting")
         self.updatef()
-        
+
     def _close(self):
         self.running = 0
         self.UpdateCheck = 1
@@ -170,7 +170,7 @@ class servofunctions:
 	data = []
 	time = []
 	start =0
-	
+
 	#range 21 to 98 (roughly 30mm)
 	power = 0
 	powerfunc = 1
@@ -183,7 +183,7 @@ class servofunctions:
 	pin_pwm.ChangeDutyCycle(21)
 
 	def reset(self):
-		if (self.t > self.M):	
+		if (self.t > self.M):
 			while (self.t > self.M):
 				self.t -= 1
 				self.pin_pwm.ChangeDutyCycle(self.t)
@@ -194,35 +194,35 @@ class servofunctions:
 				self.pin_pwm.ChangeDutyCycle(self.t)
 				sleep(0.01)
 		self.start = time()
-		
+
 		# Clear Data
 		self.data = []
 		self.time = []
-	
+
 	def squared(self):
 		self.t = self.A*math.pow(math.sin((self.freq/120.0)*((time()-self.start)*2.0*math.pi)),2)+self.M
 		self.pin_pwm.ChangeDutyCycle(self.t)
 		self.fillArr(self.t,time()-self.start)
-				
+
 	def fourth(self):
 		self.t = self.A*math.pow(math.sin((self.freq/120.0)*((time()-self.start)*2.0*math.pi)),4)+self.M
 		self.pin_pwm.ChangeDutyCycle(self.t)
 		self.fillArr(self.t,time()-self.start)
-				
+
 	def sixth(self):
 		self.t = self.A*math.pow(math.sin((self.freq/120.0)*((time()-self.start)*2.0*math.pi)),6)+self.M
 		self.pin_pwm.ChangeDutyCycle(self.t)
 		self.fillArr(self.t,time()-self.start)
-				
+
 	def absolute(self):
 		self.t = self.A*abs(math.sin((self.freq/120.0)*((time()-self.start)*2.0*math.pi)))+self.M
 		self.pin_pwm.ChangeDutyCycle(self.t)
 		self.fillArr(self.t,time()-self.start)
-		
+
 	def fillArr(self,point,time):
 		self.data.append((point-21)/.77)
 		self.data = self.data[-100:]
-		
+
 		self.time.append(time)
 		self.time = self.time[-100:]
 
@@ -248,11 +248,11 @@ class TeraRanger(Thread):
 		else:
             print("Found Evo")
             self.evo = self.openEvo()
-            
+
 	def run(self):
 		self.reset()
 		self.streamData()
-		
+
 
     def findEvo(self):
         # Find Live Ports, return port name if found, NULL if not
@@ -309,7 +309,7 @@ class TeraRanger(Thread):
         else:
             print("Waiting for frame header")
             rng = 0
-            
+
         # Checking error codes
         #if rng == 65535: # Sensor measuring above its maximum limit
         #    dec_out = float('inf')
@@ -320,66 +320,66 @@ class TeraRanger(Thread):
         #else:
             # Convert frame in meters
         #    dec_out = rng / 1000.0
-        
-        
+
+
         if rng == 65535 or rng == 1 or rng == 0:
             dec_out = 0
         else:
             dec_out = rng / 1000.0
-            
+
         return dec_out
-        
-        
+
+
 
     def update(self):
         # append to data array
-        self.data.append(self.get_evo_range()) 
+        self.data.append(self.get_evo_range())
         self.data = self.data[-100:]
-        
+
         # append to time array
         self.time.append(time()-self.start)
         self.time = self.time[-100:]
-    
+
     def getData(self):
         global edata
         mi = min(self.data)
         ma = max(self.data)
-        
-        
+
+
         if mi < self.min and mi != 0:
             self.min = mi
         if ma > self.max:
             self.max = ma
-            
-            
+
+
         temp = [0 for i in range(len(self.data))]
-        
+
         if self.max > 0:
             if self.max != self.min:
                 for i in range(len(temp)):
                     #temp[i] = (temp[i]-mi)*(100/ma)
                     temp[i] = 100-(self.edata[i]-self.min)/(self.max-self.min)*100
             else:
-                temp = self.edata    
+                temp = self.edata
 
         return temp
-                
+
     def streamData(self):
         global eData
         global eTime
-        
+
         print('Starting Evo Data Stream')
 
         while True:
             try:
                 # append to data array
-                eData.append(self.get_evo_range()) 
+                eData.append(self.get_evo_range())
                 eData = eData[-100:]
-                
+
                 # append to time array
                 eTime.append(time()-self.start)
                 eTime = eTime[-100:]
-                
+
             except serial.serialutil.SerialException:
                 print("Device disconnected (or multiple access on port). Exiting...")
                 break
@@ -400,10 +400,10 @@ if __name__=='__main__':
 	#Window = MainWindow(root)
 
 	evo.start()
-	
+
 	while(1):
 		print(eData)
-		
+
 	# Main Loop
 	while(1):
 		if(Window.UpdateCheck==1):
@@ -420,11 +420,10 @@ if __name__=='__main__':
 				servo.reset()
 				evo.reset()
 				Window.UpdateCheck = 0
-				
+
 		elif(Window.running==1):
 			func()
 			print(eData,eTime)
 			Window.updatePlot(servo.time,servo.data,eTime,eData)
-			
-		root.update()
 
+		root.update()
