@@ -63,7 +63,6 @@ class MainWindow:
     def callback(self,modeselect):
         self.FUNCinternal = modeselect
         print(modeselect)
-        
     def updatef(self):
         self.OFF = self.offset.get()*0.77+21
         self.AMP = self.amp.get()*0.77
@@ -71,14 +70,16 @@ class MainWindow:
         self.FUNC = self.FUNCinternal
         self.UpdateCheck = 1
     
-    def updatePlot(self,time,data):
+    def updatePlot(self,sTime,sData,eTime,eData):
         t = self.t
         f = self.f
         ax = self.ax
         canvas = self.canvas
         
         if self.line == None:
-            self.line, = ax.plot(time,data,'b')
+            self.sline, = ax.plot(sTime,sData,'b')
+            self.eline, = ax.plot(eTime,eData,'r')
+            
             ax.text(0.83, 1.02,'25 bpm',
                     color = 'b', fontsize = 20,
                     # bbox={'facecolor': 'blue', 'alpha': 1, 'pad': 3},
@@ -91,37 +92,38 @@ class MainWindow:
             #canvas.draw()
             #canvas.flush_events()
             ax.set_ylim([0, 100])
-            ax.set_xlim([time[0], time[len(time)-1]])
+            ax.set_xlim([min(sTime[0],eTime[0]), max(sTime[len(sTime)-1],eTime[len(eTime)-1])])
             
             
             # set animation, save backgorund
-            
             ax.get_xaxis().set_animated(True)
-            self.line.set_animated(True)
+            self.sline.set_animated(True)
+            self.eline.set_animated(True)
             canvas.draw()
             self.background=canvas.copy_from_bbox(ax.get_figure().bbox)
 
             # now redraw and blit
             ax.draw_artist(ax.get_xaxis())
-            ax.draw_artist(self.line)
+            ax.draw_artist(self.sline)
+            ax.draw_artist(self.eline)
             canvas.blit(ax.clipbox)
             
         else:
-            self.line.set_xdata(time)
-            self.line.set_ydata(data)
-            self.ax.set_xlim([time[0],time[len(time)-1]])
+            self.sline.set_xdata(sTime)
+            self.sline.set_ydata(sData)
+            self.eline.set_xdata(eTime)
+            self.eline.set_ydata(eData)
             
-
-            #canvas.draw()
-            #canvas.flush_events()
+            ax.set_xlim([min(sTime[0],eTime[0]), max(sTime[len(sTime)-1],eTime[len(eTime)-1])])
+            
                         
             # restore the background, draw animation,blit
             canvas.restore_region(self.background)
             ax.draw_artist(ax.get_xaxis())
-            ax.draw_artist(self.line)
+            ax.draw_artist(self.sline)
+            ax.draw_artist(self.eline)
             canvas.blit(ax.clipbox)
             canvas.flush_events()
-            
             
     def start(self):
         if self.running:
@@ -139,15 +141,10 @@ class MainWindow:
         self.UpdateCheck = 1
         self.root.destroy()
 
-def updatePlots(window,evo):
-    print("Hi")
-    while True:
-        continue
     
 if __name__ == "__main__":
 
     root = tk.Tk()
     Window = MainWindow(root)
     Evo = 5 #TeraRanger()
-    root.update()
-    updatePlots(Window,Window)
+    root.mainloop()

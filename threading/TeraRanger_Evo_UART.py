@@ -13,8 +13,6 @@ from time import time
 
 
 from scipy.fftpack import fft, fftfreq
-edata = []
-etime = []
 
 
 class TeraRanger:
@@ -153,21 +151,19 @@ class TeraRanger:
 
         return temp
                 
-    def streamData(self):
-        global edata
-        global etime
+    def streamData(self,data,timeArr):
         
         print('Starting Evo Data Stream')
 
         while True:
             try:
                 # append to data array
-                edata.append(self.get_evo_range()) 
-                edata = edata[-100:]
+                data.append(self.get_evo_range()) 
+                data = data[-100:]
                 
                 # append to time array
-                etime.append(time()-self.start)
-                etime = etime[-100:]
+                timeArr.append(time()-self.start)
+                timeArr = timeArr[-100:]
                 
             except serial.serialutil.SerialException:
                 print("Device disconnected (or multiple access on port). Exiting...")

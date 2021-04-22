@@ -3,7 +3,7 @@ import math
 import RPi.GPIO as GPIO
 from time import sleep,time
 import numpy as np
-import matplotlib.pyplot as p
+import matplotlib.pyplot as plt
 
 
 start = 0.0
@@ -122,7 +122,7 @@ def squared(event):
 		if (p==1):
 			if (m == 0):
 				i += 1
-				t = 77*math.pow(math.sin(0.125*((time()-start)*2.0*math.pi/1000.0)),2)+21
+				t = 77*math.pow(math.sin(0.125*((time()-start)*2.0*math.pi)),2)+21
 				pin_pwm.ChangeDutyCycle(t)
 				#sleep(0.001)	
 				if (i%10 == 0):
@@ -249,7 +249,7 @@ abbutton.bind("<Button-1>",absolute)
 abbutton.grid(column=3,row=0)
 
 def plot():
-	p.clf()
+	plt.clf()
 	global freq
 	global M
 	global A
@@ -259,22 +259,29 @@ def plot():
 	x = np.arange(0,100,0.1)
 	if(powerfunc==1):
 		y = A*np.power(np.sin(freq*(x*2.0*math.pi/1000.0)),power)+M
-		p.plot(x,y)
-		p.title('Sine^power Plot')
-		p.grid(True,which='both')
-		p.draw()
-		p.pause(0.01)
+		plt.plot(x,y)
+		plt.title('Sine^power Plot')
+		plt.grid(True,which='both')
+		plt.draw()
+		plt.pause(0.01)
 	if(powerfunc==0):
 		y = A*abs(np.sin(freq*(x*2.0*math.pi/1000.0)))+M
-		p.plot(x,y)
-		p.title('|Sine| Plot')
-		p.xlabel('Time')
-		p.ylabel('Amplitude')
-		p.grid(True,which='both')
-		p.draw()
-		p.pause(0.01)
+		plt.plot(x,y)
+		plt.title('|Sine| Plot')
+		plt.xlabel('Time')
+		plt.ylabel('Amplitude')
+		plt.grid(True,which='both')
+		plt.draw()
+		plt.pause(0.01)
 plotbutton = tk.Button(root,text="Plot",width=10,height=5,bg="blue",fg="white",command=plot)
 plotbutton.grid(column=3,row=2)
+
+#xdata = []
+#ydata = []
+#plt.show()
+
+#def updateplot():
+	
 
 s = tk.Scale(root,label="BPM",length=100,from_=0.0,to=60.0,digits=2,resolution=1)
 s.grid(column=0,row=2)
