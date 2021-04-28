@@ -37,7 +37,6 @@ if __name__ == "__main__":
 	fo = fook()
 
 	BaseManager.register("myData",yote)
-	BaseManager.register("Data2",yote)
 	m = BaseManager()
 	m.start()
 	

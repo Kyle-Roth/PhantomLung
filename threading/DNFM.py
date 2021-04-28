@@ -9,16 +9,17 @@ import math
 import RPi.GPIO as GPIO
 import numpy as np
 import matplotlib.pyplot as plt
-from threading import Thread
+import multiprocessing
+from multiprocessing.managers import BaseManager
 
 # Custom Libraries
 from GUI import MainWindow
-from servos import Servos
+from servos import Servos, ServoData
 from TeraRanger_Evo_UART import TeraRanger
 
 class Data:
 	
-	def __init__(self):
+	def __init__(self,data =None):
 		self.length = 5000
 		
 		self.sTime = []
@@ -53,56 +54,58 @@ if __name__=='__main__':
 	
 	
 	# Set up manager for sharing data between processes
-	BaseManager.register("pltData",Data)
+	BaseManager.register("servoData",ServoData)
 	m = BaseManager()
 	m.start()
-	data = m.pltData(0)
+	sData = m.servoData(0)
 	
-	servo = Servos()
+	#servo = Servos()
 	#evo = TeraRanger()
 	
 	root = tk.Tk()
 	Window = MainWindow(root)
 
-
-	#evo.start()
+	s = multiprocessing.Process(target = Servos, args = (sData,))
+	s.start()
 	
+	g = multiprocessing.Process(target = Window.updatePlot, args = (sData,))
+	g.start()
 	#while(1):
 	#	continue
 		#print(evo.data,evo.time)
 		#print(servo.data)
 		
 	# Main Loop
-	while(root):
-		if Window.UpdateCheck:
-			if Window.running:
+	while(1):
+		#if Window.UpdateCheck:
+		#	if Window.running:
 				# Pass Data to the Servo
-				servo.newVals = [Window.OFF, Window.AMP, Window.BPM, Window.FUNC]
-				servo.updateCheck = 1
-				servo.running = 1
+		#		servo.newVals = [Window.OFF, Window.AMP, Window.BPM, Window.FUNC]
+		#		servo.updateCheck = 1
+		#		servo.running = 1
 				
 				#evo.updateCheck = 1
 				#evo.running = 1
 				
-				Window.UpdateCheck = 0
-			else:
+		#		Window.UpdateCheck = 0
+		#	else:
 				# Pass Data to the Servo
-				servo.newVals = [21, 0, 0, Window.FUNC] #21 duty cycle corresponds with 0 location
-				servo.updateCheck = 1
-				servo.running = 0
+		#		servo.newVals = [21, 0, 0, Window.FUNC] #21 duty cycle corresponds with 0 location
+		#		servo.updateCheck = 1
+		#		servo.running = 0
 
 				#evo.updateCheck = 1
 				#evo.running = 0
 							
-				Window.UpdateCheck = 0
+		#		Window.UpdateCheck = 0
 				
-		elif(Window.running==1):
-			Window.updatePlot(servo.time,servo.data)
+		#elif(Window.running==1):
+		#Window.updatePlot(sData)
 			
-		if Window.ExitFlag == False:
-			root.update()
-		else:
-			break
+		#if Window.ExitFlag == False:
+		root.update()
+		#else:
+		#	break
 		
 	
 	print("Here")

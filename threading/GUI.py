@@ -9,8 +9,6 @@ from TeraRanger_Evo_UART import TeraRanger
 
 class MainWindow:
 
-    t = np.linspace(0, 2, 2 * 10000, endpoint=False)
-    f = 1
     sline = None
     eline = None
     running = 0
@@ -62,9 +60,11 @@ class MainWindow:
         start.grid(column=4,row=0)
         update.grid(column=5,row=0)
         
+
     def callback(self,modeselect):
         self.FUNCinternal = modeselect
         print(modeselect)
+        
     def updatef(self):
         self.OFF = self.offset.get()*0.77+21
         self.AMP = self.amp.get()*0.77
@@ -143,72 +143,76 @@ class MainWindow:
             canvas.blit(ax.clipbox)
             canvas.flush_events()
     
-    def updatePlot(self,sTime,sData):
-        st = time()
-        ax = self.ax
-        canvas = self.canvas
-        
-        # Check Servo Data Lengths
-        
-        #if len(sTime) < len(sData):
-         #   sData = sData[-len(sTime):]
-        #elif len(sTime) > len(sData):
-        #    sTime= sTime[-len(sData):]
+    def updatePlot(self,servoData):
+        while 1:
+            
+            length = 5000
+            ax = self.ax
+            canvas = self.canvas
+            
+            sTime,sData = servoData.getData()
+            
+            # Check Servo Data Lengths
+            
+            #if len(sTime) < len(sData):
+             #   sData = sData[-len(sTime):]
+            #elif len(sTime) > len(sData):
+            #    sTime= sTime[-len(sData):]
 
-        # Check Evo Data Lengths
-        #if len(eTime) < len(eData):
-        #    eData = eData[-len(eTime):]
-        #elif len(eTime) > len(eData):
-        #    eTime= eTime[-len(eData):]
-        
-        if(len(sTime) < 10000) or (len(sData) < 10000):
-            print("Returning")
-            return
-        else:
-            timeD = sTime[-10000:]
-            data = sData[-10000:]
-            print("Cropping!")
-        
-        
-        if self.sline == None:
-            ax.clear()
-            self.sline, = ax.plot(timeD,data,'b')
+            # Check Evo Data Lengths
+            #if len(eTime) < len(eData):
+            #    eData = eData[-len(eTime):]
+            #elif len(eTime) > len(eData):
+            #    eTime= eTime[-len(eData):]
             
-            ax.text(0.83, 1.02,'25 bpm',
-                    color = 'b', fontsize = 20,
-                    # bbox={'facecolor': 'blue', 'alpha': 1, 'pad': 3},
-                    transform = ax.transAxes)
-            
-            ax.set_ylim([0, 100])
-            ax.set_xlim([timeD[0], timeD[len(timeD)-1]])
+            if(len(sTime) < length) or (len(sData) < length):
+                print("Returning")
+                continue
+            else:
+                print("Cropping!")
+                timeD = sTime[-length:]
+                data = sData[-length:]
+                print("Cropped!")
             
             
-            # set animation, save backgorund
-            ax.get_xaxis().set_animated(True)
-            self.sline.set_animated(True)
-            canvas.draw()
-            self.background=canvas.copy_from_bbox(ax.get_figure().bbox)
+            if self.sline == None:
+                ax.clear()
+                self.sline, = ax.plot(timeD,data,'b')
+                
+                ax.text(0.83, 1.02,'25 bpm',
+                        color = 'b', fontsize = 20,
+                        # bbox={'facecolor': 'blue', 'alpha': 1, 'pad': 3},
+                        transform = ax.transAxes)
+                
+                ax.set_ylim([0, 100])
+                ax.set_xlim([timeD[0], timeD[len(timeD)-1]])
+                
+                
+                # set animation, save backgorund
+                ax.get_xaxis().set_animated(True)
+                self.sline.set_animated(True)
+                canvas.draw()
+                self.background=canvas.copy_from_bbox(ax.get_figure().bbox)
 
-            # now redraw and blit
-            ax.draw_artist(ax.get_xaxis())
-            ax.draw_artist(self.sline)
-            canvas.blit(ax.clipbox)
+                # now redraw and blit
+                ax.draw_artist(ax.get_xaxis())
+                ax.draw_artist(self.sline)
+                canvas.blit(ax.clipbox)
+                
+            else:
+                self.sline.set_xdata(timeD)
+                self.sline.set_ydata(data)
+                
+                ax.set_xlim([timeD[0], timeD[len(timeD)-1]])
+                
+                            
+                # restore the background, draw animation,blit
+                canvas.restore_region(self.background)
+                ax.draw_artist(ax.get_xaxis())
+                ax.draw_artist(self.sline)
+                canvas.blit(ax.clipbox)
+                canvas.flush_events()
             
-        else:
-            self.sline.set_xdata(timeD)
-            self.sline.set_ydata(data)
-            
-            ax.set_xlim([timeD[0], timeD[len(timeD)-1]])
-            
-                        
-            # restore the background, draw animation,blit
-            canvas.restore_region(self.background)
-            ax.draw_artist(ax.get_xaxis())
-            ax.draw_artist(self.sline)
-            canvas.blit(ax.clipbox)
-            canvas.flush_events()
-            
-        print(time()-st)
             
     def start(self):
         if self.running:
