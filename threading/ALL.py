@@ -18,7 +18,7 @@ import RPi.GPIO as GPIO
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk # custom toolbar
 
-from threading import Thread
+import threading
 from scipy.fftpack import fft, fftfreq
 
 sData = []
@@ -169,11 +169,7 @@ class servofunctions:
 	t = 21
 	data = []
 	time = []
-	start =0
-
 	#range 21 to 98 (roughly 30mm)
-	power = 0
-	powerfunc = 1
 	pin = 33
 	GPIO.setwarnings(False)
 	GPIO.setmode(GPIO.BOARD)
@@ -226,7 +222,7 @@ class servofunctions:
 		self.time.append(time)
 		self.time = self.time[-100:]
 
-class TeraRanger(Thread):
+class TeraRanger(threading.Thread):
 	port = None
 	evo = None
 	data = []
@@ -238,7 +234,8 @@ class TeraRanger(Thread):
 	max = 0
 
 	def __init__(self):
-
+		threading.Thread.__init__(self)
+		self.name = "Sensor Thread"
 		print('Initializing Evo Data Stream')
 
 		self.port = self.findEvo()
@@ -393,14 +390,14 @@ def switch(arg):
 	return switcher.get(arg,"invalid")
 
 if __name__=='__main__':
-	servo = servofunctions()
-	evo = TeraRanger()
-	func = servo.absolute
+	#servo = servofunctions()
+	evot = TeraRanger()
+	#func = servo.absolute
 	#root = tk.Tk()
 	#Window = MainWindow(root)
 
-	evo.start()
-
+	evot.start()
+	
 	while(1):
 		print(eData)
 

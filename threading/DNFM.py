@@ -7,54 +7,104 @@ from time import sleep
 from TeraRanger_Evo_UART import TeraRanger
 import math
 import RPi.GPIO as GPIO
-from time import sleep,time
 import numpy as np
 import matplotlib.pyplot as plt
 from threading import Thread
 
 # Custom Libraries
 from GUI import MainWindow
-from servos import servofunctions
+from servos import Servos
 from TeraRanger_Evo_UART import TeraRanger
 
-def switch(arg):
-	switcher = { "|sin|":servo.absolute,"sin^2":servo.squared,
-		"sin^4":servo.fourth,"sin^6":servo.sixth}
-	return switcher.get(arg,"invalid")
+class Data:
+	
+	def __init__(self):
+		self.length = 5000
+		
+		self.sTime = []
+		self.sData = []
+		
+		self.eTime = []
+		self.sData = []
 
+	def getS(self):
+		return sTime,sData
+		
+	def addS(self,time,data):
+		# append the new data points and strip the oldest point
+		self.sTime.append(time)
+		self.sTime = self.sTime[-self.length:]
+		
+		self.sData.append(data)
+		self.sData = self.sData[-self.length:]
+	
+	def getE(self):
+		return eTime,eData
+		
+	def addE(self,time,data):
+		# append the new data points and strip the oldest point
+		self.eTime.append(time)
+		self.eTime = self.eTime[-self.length:]
+		
+		self.eData.append(data)
+		self.eData = self.eData[-self.length:]
 
 if __name__=='__main__':
-	servo = servofunctions()
-	evo = TeraRanger()
-	func = servo.absolute
+	
+	
+	# Set up manager for sharing data between processes
+	BaseManager.register("pltData",Data)
+	m = BaseManager()
+	m.start()
+	data = m.pltData(0)
+	
+	servo = Servos()
+	#evo = TeraRanger()
+	
 	root = tk.Tk()
 	Window = MainWindow(root)
 
-	eData = []
-	eTime = []
-	t = Thread(target = evo.streamData,args = (eData,eTime))
-	t.start()
+
+	#evo.start()
 	
+	#while(1):
+	#	continue
+		#print(evo.data,evo.time)
+		#print(servo.data)
+		
 	# Main Loop
-	while(1):
-		if(Window.UpdateCheck==1):
+	while(root):
+		if Window.UpdateCheck:
 			if Window.running:
-				servo.A = Window.AMP
-				servo.M = Window.OFF
-				servo.freq = Window.BPM
-				func = switch(Window.FUNC)
-				servo.reset()
-				evo.reset()
+				# Pass Data to the Servo
+				servo.newVals = [Window.OFF, Window.AMP, Window.BPM, Window.FUNC]
+				servo.updateCheck = 1
+				servo.running = 1
+				
+				#evo.updateCheck = 1
+				#evo.running = 1
+				
 				Window.UpdateCheck = 0
 			else:
-				servo.M = 21 #21 duty cycle corresponds with 0 location
-				servo.reset()
-				evo.reset()
+				# Pass Data to the Servo
+				servo.newVals = [21, 0, 0, Window.FUNC] #21 duty cycle corresponds with 0 location
+				servo.updateCheck = 1
+				servo.running = 0
+
+				#evo.updateCheck = 1
+				#evo.running = 0
+							
 				Window.UpdateCheck = 0
 				
 		elif(Window.running==1):
-			func()
-			print(eData,eTime)
-			Window.updatePlot(servo.time,servo.data,eTime,eData)
+			Window.updatePlot(servo.time,servo.data)
 			
-		root.update()
+		if Window.ExitFlag == False:
+			root.update()
+		else:
+			break
+		
+	
+	print("Here")
+	servo.join()
+	#evo.join()

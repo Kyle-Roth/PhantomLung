@@ -31,8 +31,6 @@ if __name__=='__main__':
 	Window = MainWindow(root)
 
 	
-	thread.start_new_thread(evo.streamData,())
-	
 	# Main Loop
 	while(1):
 		if(Window.UpdateCheck==1):
@@ -52,7 +50,7 @@ if __name__=='__main__':
 				
 		elif(Window.running==1):
 			func()
-			print(edata)
-			Window.updatePlot(servo.time,servo.data,etime,edata)
+			evo.update()
+			Window.updatePlot(servo.time,servo.data,evo.time,evo.getData())
 			
 		root.update()

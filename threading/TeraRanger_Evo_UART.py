@@ -10,36 +10,63 @@ import numpy as np
 import serial.tools.list_ports
 import crcmod.predefined  # To install: pip install crcmod
 from time import time
+from threading import Thread
 
 
 from scipy.fftpack import fft, fftfreq
 
 
-class TeraRanger:
+class TeraRanger(Thread):
 
     port = None
     evo = None
     data = []
     time = []
-    start = 0
+    startTime = 0
     freqs = []
     bpm = None
     min = 100
     max = 0
-
+    
+    updateCheck = 0
+    running = 1
+    
     def __init__(self):
-
+        
+        Thread.__init__(self)
         print('Initializing Evo Data Stream')
 
         self.port = self.findEvo()
-
+        
         if self.port == 'NULL':
             print("Could not find Evo")
         else:
             print("Found Evo")
             self.evo = self.openEvo()
             
+    def run(self):
         self.reset()
+        
+        while True:
+            if self.updateCheck:
+                self.reset()
+                self.updateCheck = 0
+            elif self.running:
+                try:
+                    self.plotCheck = 0
+                    
+                    # append to data array
+                    self.data.append(self.get_evo_range())
+                    self.data = self.data[-100:]
+                    
+                    # append to time array
+                    self.time.append(time()-self.startTime)
+                    self.time = self.time[-100:]
+                    
+                    self.plotCheck = 1
+                except serial.serialutil.SerialException:
+                   print("Device disconnected (or multiple access on port). Exiting...")
+                   break
 
     def findEvo(self):
         # Find Live Ports, return port name if found, NULL if not
@@ -55,7 +82,7 @@ class TeraRanger:
     def reset(self):
         self.min = 100
         self.max = 0
-        self.start = time()
+        self.startTime = time()
         self.data = []
         self.time = []
 
@@ -116,7 +143,6 @@ class TeraRanger:
             
         return dec_out
         
-        
 
     def update(self):
         # append to data array
@@ -124,11 +150,10 @@ class TeraRanger:
         self.data = self.data[-100:]
         
         # append to time array
-        self.time.append(time()-self.start)
+        self.time.append(time()-self.startTime)
         self.time = self.time[-100:]
     
     def getData(self):
-        global edata
         mi = min(self.data)
         ma = max(self.data)
         
@@ -143,31 +168,13 @@ class TeraRanger:
         
         if self.max > 0:
             if self.max != self.min:
-                for i in range(len(temp)):
+                for i in range(len(data)):
                     #temp[i] = (temp[i]-mi)*(100/ma)
-                    temp[i] = 100-(self.edata[i]-self.min)/(self.max-self.min)*100
+                    temp[i] = 100-(self.data[i]-self.min)/(self.max-self.min)*100
             else:
-                temp = self.edata    
+                temp = self.data    
 
         return temp
-                
-    def streamData(self,data,timeArr):
-        
-        print('Starting Evo Data Stream')
-
-        while True:
-            try:
-                # append to data array
-                data.append(self.get_evo_range()) 
-                data = data[-100:]
-                
-                # append to time array
-                timeArr.append(time()-self.start)
-                timeArr = timeArr[-100:]
-                
-            except serial.serialutil.SerialException:
-                print("Device disconnected (or multiple access on port). Exiting...")
-                break
 
     def _close(self):
         self.evo.close()
@@ -180,7 +187,7 @@ if __name__ == "__main__":
     from tkinter import Tk
 
     evo = TeraRanger()
-    evo.start = time()
+    evo.startTime = time()
     
     root = Tk()
         # Create Figure and Pack Axis

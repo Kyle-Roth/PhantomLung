@@ -130,7 +130,6 @@ class TeraRanger:
         self.time = self.time[-100:]
     
     def getData(self):
-        global edata
         mi = min(self.data)
         ma = max(self.data)
         
@@ -145,11 +144,11 @@ class TeraRanger:
         
         if self.max > 0:
             if self.max != self.min:
-                for i in range(len(temp)):
+                for i in range(len(self.data)):
                     #temp[i] = (temp[i]-mi)*(100/ma)
-                    temp[i] = 100-(self.edata[i]-self.min)/(self.max-self.min)*100
+                    temp[i] = 100-(self.data[i]-self.min)/(self.max-self.min)*100
             else:
-                temp = self.edata    
+                temp = self.data    
 
         return temp
                 

@@ -16,36 +16,36 @@ from GUI import MainWindow
 from servos import servofunctions
 #from TeraRanger_Evo_UART import TeraRanger
 
-def switch(arg):
+def switch(arg): #equivalent of switch case in python. dictionary look up/jump table
 	switcher = { "|sin|":servo.absolute,"sin^2":servo.squared,
 		"sin^4":servo.fourth,"sin^6":servo.sixth}
 	return switcher.get(arg,"invalid")
 
 if __name__=='__main__':
-	servo = servofunctions()
-	func = servo.absolute
-	root = tk.Tk()
-	Window = MainWindow(root)
+	servo = servofunctions() #creates object to control robot
+	func = servo.absolute #initializes breathing pattern
+	root = tk.Tk() #creates window for tkinter
+	Window = MainWindow(root) #creates object to control tkinter
 
 
 	# Main Loop
-	while(1):
-		if(Window.UpdateCheck==1):
+	while(1): 
+		if(Window.UpdateCheck==1): #runs if update or start/stop has been clicked in GUI (or if exiting)
 			if Window.running:
-				servo.A = Window.AMP
+				servo.A = Window.AMP #these all take GUI values and sends them to the pattern calculations in servo
 				servo.M = Window.OFF
 				servo.freq = Window.BPM
 				func = switch(Window.FUNC)
-				servo.reset()
-				Window.UpdateCheck = 0
-			else:
+				servo.reset() #resets the robot to the offset
+				Window.UpdateCheck = 0 #stops this branch from running multiple times without user input
+			else: #resets the robot to zero position when stopped or exiting
 				servo.M = 21 #21 duty cycle corresponds with 0 location
 				servo.reset()
 				Window.UpdateCheck = 0
 				
 		elif(Window.running==1):
-			func()
-			Window.updatePlot(servo.time,servo.data)
+			func() #runs selected function in servofunctions to move the robot
+			Window.updatePlot(servo.time,servo.data) #updates plot
 		
-		root.update()
+		root.update() #checks GUI for input
 	

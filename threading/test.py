@@ -1,27 +1,53 @@
-from threading import Thread, Event
-from time import sleep
+import multiprocessing
+from multiprocessing.managers import BaseManager
+from time import sleep,time
 
-event = Event()
+class yote:
+	def __init__(self,data=None):
+		self.data = data
+		self.k = 1
+		self.p = 2
+		
+	def getK(self): return self.k
+	def getP(self): return self.p
+	def setK(self,d): self.k = d
+	def setP(self,p): self.p = d
+	
+class fuck:
+	def __init__(self):
+		print("fuck")
+	
+	def run(self,d):
+		while(1):
+			print("fuck",d.getK(),d.getP())
+			d.setK(d.getK() + 1)
 
-def modify_variable(var):
-    while True:
-        for i in range(len(var)):
-            var[i] += 1
-        if event.is_set():
-            break
-        #sleep(.5)
-    print('Stop printing')
+class fook:
+	def __init__(self):
+		print("fook")
 
+	def run(self,d):
+		while(1):
+			print("fook",d.getK(),d.getP())
+			d.setK(d.getK() + 1)
+	
+if __name__ == "__main__":
+	
+	f = fuck()
+	fo = fook()
 
-my_var = [1, 2, 3]
-t = Thread(target=modify_variable, args=(my_var, ))
-t.start()
-while True:
-    try:
-        print(my_var)
-        #sleep(1)
-    except KeyboardInterrupt:
-        event.set()
-        break
-t.join()
-print(my_var)
+	BaseManager.register("myData",yote)
+	BaseManager.register("Data2",yote)
+	m = BaseManager()
+	m.start()
+	
+	y = m.myData(0)
+	x = m.Data2(0)
+	
+	p1 = multiprocessing.Process(target = f.run, args=(y,))
+	p2 = multiprocessing.Process(target = fo.run,args=(y,))
+
+	p1.start()
+	p2.start()
+	while(1):
+		continue
