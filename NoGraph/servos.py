@@ -36,9 +36,6 @@ class servofunctions:
 				sleep(0.01)
 		self.start = time() #resets step to zero - equivalent to resetting iteration
 		
-		# Clear Data
-		#self.data = []
-		#self.time = []
 	def checkduty(self,amp,off): #keeps duty cycle within proper value range and keeps program from crashing when invalid inputs are given
 		if((amp+off)>98.0):
 			if(not self.error): #makes message only print once when error occurs until it is fixed then occurs again
@@ -56,29 +53,18 @@ class servofunctions:
 		self.t = self.A*math.pow(math.sin((self.freq/120.0)*((time()-self.start)*2.0*math.pi)),2)+self.M
 		if(self.checkduty(self.A,self.M)):
 			self.pin_pwm.ChangeDutyCycle(self.t)
-		#self.fillArr(self.t,time()-self.start)
-				
+			
 	def fourth(self):
 		self.t = self.A*math.pow(math.sin((self.freq/120.0)*((time()-self.start)*2.0*math.pi)),4)+self.M
 		if(self.checkduty(self.A,self.M)):
 			self.pin_pwm.ChangeDutyCycle(self.t)
-		#self.fillArr(self.t,time()-self.start)
 				
 	def sixth(self):
 		self.t = self.A*math.pow(math.sin((self.freq/120.0)*((time()-self.start)*2.0*math.pi)),6)+self.M
 		if(self.checkduty(self.A,self.M)):
 			self.pin_pwm.ChangeDutyCycle(self.t)
-		#self.fillArr(self.t,time()-self.start)
 				
 	def absolute(self):
 		self.t = self.A*abs(math.sin((self.freq/120.0)*((time()-self.start)*2.0*math.pi)))+self.M
 		if(self.checkduty(self.A,self.M)):
 			self.pin_pwm.ChangeDutyCycle(self.t)
-		#self.fillArr(self.t,time()-self.start)
-		
-	#def fillArr(self,point,time):
-	#	self.data.append((point-21)/.77)
-	#	self.data = self.data[-100:]
-	#	
-	#	self.time.append(time)
-	#	self.time = self.time[-100:]

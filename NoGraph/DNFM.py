@@ -13,7 +13,6 @@ import matplotlib.pyplot as plt
 # Custom Libraries
 from GUI import MainWindow
 from servos import servofunctions
-#from TeraRanger_Evo_UART import TeraRanger
 
 def switch(arg): #equivalent of switch case in python. dictionary look up/jump table
 	switcher = { "|sin|":servo.absolute,"sin^2":servo.squared,
@@ -44,7 +43,6 @@ if __name__=='__main__':
 				
 		elif(Window.running==1):
 			func() #runs selected function in servofunctions to move the robot
-			#Window.updatePlot(servo.time,servo.data) #updates plot
 		
 		root.update() #checks GUI for input
 	
