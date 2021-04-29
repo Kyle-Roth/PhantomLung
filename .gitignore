@@ -1,1 +1,5 @@
+*.DS_Store
 __pycache__
+/TeraRanger-Evo/masOs/TR
+*.bin
+/Arduino/*.txt

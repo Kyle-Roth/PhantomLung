@@ -35,7 +35,7 @@ class MainWindow:
 
         ax.grid(which='both',linestyle='--')
         ax.set_xlabel("Time (s)")
-        
+
         settings=self.settings= Frame(root)
         settings.pack(expand='yes')
 
@@ -59,31 +59,31 @@ class MainWindow:
         mode.grid(column=3,row=0)
         start.grid(column=4,row=0)
         update.grid(column=5,row=0)
-        
+
     def callback(self,modeselect):
         self.FUNCinternal = modeselect
         print(modeselect)
-        
+
     def updatef(self):
         self.OFF = self.offset.get()*0.77+21
         self.AMP = self.amp.get()*0.77
         self.BPM = self.bpm.get()
         self.FUNC = self.FUNCinternal
         self.UpdateCheck = 1
-    
+
     def updatePlot(self,time,data):
         t = self.t
         f = self.f
         ax = self.ax
         canvas = self.canvas
-        
+
         if self.line == None:
             self.line, = ax.plot(time,data,'b')
             ax.text(0.83, 1.02,'25 bpm',
                     color = 'b', fontsize = 20,
                     # bbox={'facecolor': 'blue', 'alpha': 1, 'pad': 3},
                     transform = ax.transAxes)
-            
+
             #ax.relim()
             #ax.autoscale_view()
 
@@ -92,10 +92,10 @@ class MainWindow:
             #canvas.flush_events()
             ax.set_ylim([0, 100])
             ax.set_xlim([time[0], time[len(time)-1]])
-            
-            
+
+
             # set animation, save backgorund
-            
+
             ax.get_xaxis().set_animated(True)
             self.line.set_animated(True)
             canvas.draw()
@@ -105,24 +105,24 @@ class MainWindow:
             ax.draw_artist(ax.get_xaxis())
             ax.draw_artist(self.line)
             canvas.blit(ax.clipbox)
-            
+
         else:
             self.line.set_xdata(time)
             self.line.set_ydata(data)
             self.ax.set_xlim([time[0],time[len(time)-1]])
-            
+
 
             #canvas.draw()
             #canvas.flush_events()
-                        
+
             # restore the background, draw animation,blit
             canvas.restore_region(self.background)
             ax.draw_artist(ax.get_xaxis())
             ax.draw_artist(self.line)
             canvas.blit(ax.clipbox)
             canvas.flush_events()
-            
-            
+
+
     def start(self):
         if self.running:
             self.running = 0
@@ -133,21 +133,17 @@ class MainWindow:
             self.start.configure(text='Stop')
             print("Starting")
         self.updatef()
-        
+
     def _close(self):
         self.running = 0
         self.UpdateCheck = 1
         self.root.destroy()
 
-def updatePlots(window,evo):
-    print("Hi")
-    while True:
-        continue
-    
 if __name__ == "__main__":
 
     root = tk.Tk()
     Window = MainWindow(root)
     Evo = 5 #TeraRanger()
-    root.update()
+    while(1):
+        root.update()
     updatePlots(Window,Window)
