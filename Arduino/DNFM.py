@@ -13,7 +13,10 @@ def updateParams(servo,window):
 
 if __name__=='__main__':
 	servo = Servo("/dev/cu.usbserial-14130")
-	evo = TeraRanger()
+	# This is the Sensor. To adapt the code for a new sensor, Replace 'TeraRanger()' with
+	# The constructor for your new sensor. This new sensor library will need to have funciton
+	# calls for update(), reset(), close(), getData(), and there should be a time array
+	sensor = TeraRanger()
 	root = tk.Tk()
 	Window = MainWindow(root)
 
@@ -28,15 +31,15 @@ if __name__=='__main__':
 
 			# Reset the needed parameters
 			servo.reset()
-			evo.reset()
+			sensor.reset()
 			Window.update = 0
 
 		elif Window.running:
 			servo.update()
-			evo.update()
-			Window.updatePlots(servo.time,servo.data,evo.time,evo.getData())
+			sensor.update()
+			Window.updatePlots(servo.time,servo.data,sensor.time,sensor.getData())
 
 		root.update()
 
 	servo._close()
-	evo._close()
+	sensor._close()
