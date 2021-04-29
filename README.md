@@ -22,7 +22,7 @@ Inside the 'threading' folder are even more programs used to run the sensor and 
 Inside the 'Arduino' folder is code to control the Lung using an Arduino. The Arduino is sent serial data from a laptop and the arduino makes this into a PWM signal. There are many different ways to run this code:
 
 > python3 DNFMServo.py
-  python3 DNFMEvo.py
+> python3 DNFMEvo.py
 
 This will open two seperate windows. The DNFMServo window can control the Lung and the DNFMEvo window can plot the data from the Sensor.
 
