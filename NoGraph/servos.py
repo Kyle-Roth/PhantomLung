@@ -12,8 +12,6 @@ class servofunctions:
 	M = 21 #offset of functions
 	t = 21 #range 21 to 98 (roughly 30mm)
 	error = False #for checking if error in user inputs
-	data = []
-	time = []
 	#GPIO initialization for PWM signal
 	pin = 33
 	GPIO.setwarnings(False)
@@ -48,11 +46,12 @@ class servofunctions:
 				print("Back to work") #lets user know the process should be running properly again
 				self.error = False
 			return True
-		
+	
+	#breathing pattern functions	
 	def squared(self):
 		self.t = self.A*math.pow(math.sin((self.freq/120.0)*((time()-self.start)*2.0*math.pi)),2)+self.M
 		if(self.checkduty(self.A,self.M)):
-			self.pin_pwm.ChangeDutyCycle(self.t)
+			self.pin_pwm.ChangeDutyCycle(self.t) #sets duty cycle -> sets robot position
 			
 	def fourth(self):
 		self.t = self.A*math.pow(math.sin((self.freq/120.0)*((time()-self.start)*2.0*math.pi)),4)+self.M
