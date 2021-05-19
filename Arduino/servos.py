@@ -12,10 +12,10 @@ class Servo:
 	def __init__(self,addr):
 		# Initialize the Serial Communication with te Arduino
 		self.addr = addr
-		self.ser = ser = serial.Serial(port=addr, baudrate=115200, timeout=0.1)
+		# self.ser = ser = serial.Serial(port=addr, baudrate=115200, timeout=0.1)
 
-		ser.flushInput()
-		ser.flushOutput()
+		# ser.flushInput()
+		# ser.flushOutput()
 		sleep(2)
 
 
@@ -69,7 +69,7 @@ class Servo:
 		#print(temp)
 		# self.ser.flushOutput()
 		#sleep(0.1)
-		self.ser.write(temp)
+		# self.ser.write(temp)
 		# print("Written",self.duty)
 
 	def switch(self,arg):
@@ -78,8 +78,8 @@ class Servo:
 			"sin^4":self.fourth,"sin^6":self.sixth}
 		return switcher.get(arg,"invalid")
 
-	def _close(self):
-		self.ser.close()
+	# def _close(self):
+		# self.ser.close()
 
 if __name__ == "__main__":
 
