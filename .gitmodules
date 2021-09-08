@@ -1,0 +1,3 @@
+[submodule "TeraRanger-Evo"]
+	path = TeraRanger-Evo
+	url = git@github.com:Kyle-Roth/TeraRanger-Evo.git
