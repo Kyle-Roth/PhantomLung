@@ -162,6 +162,8 @@ int writePort(int fd, uint8_t* buffer, size_t size)
 // there was an error reading.
 ssize_t readPort(int fd, uint8_t* buffer, size_t size)
 {
+  tcflush(fd,TCIOFLUSH); // Flush the buffer
+
   size_t received = 0;
   while (received < size)
   {
@@ -261,8 +263,8 @@ int main()
     uint16_t temp2 = 0;
     uint8_t CRC = 0;
 
-      /* collect 100,000 measurements*/
-    for(uint32_t i= 0; i < 100000 ; i++)
+      /* collect 10,000 measurements*/
+    for(uint32_t i= 0; i < 10000 ; i++)
     {
       readPort(fd, buffer, 4); // read 4 bytes
       gettimeofday(&after , NULL); // get current time
@@ -300,7 +302,7 @@ int main()
       // *(output+5) = *(buffer+2);
       write(Tfile, Toutput, 4);
       write(Dfile, Doutput, 2);
-      // printf("%d,%d\n",*Toutput,*Doutput);
+      printf("%d,%d\n",*Toutput,*Doutput);
 
       if(i%1000 == 0)
         printf("%d\n",i);
